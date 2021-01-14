@@ -6,6 +6,7 @@
 # Load packages
 if(!require(shiny)){install.packages('shiny')}
 if(!require(lavaan)){install.packages('lavaan')}
+install.packages('xfun')
 if(!require(semPlot)){install.packages('semPlot')}
 if(!require(rhandsontable)){install.packages('rhandsontable')}
 if(!require(semTools)){install.packages('semTools')}
