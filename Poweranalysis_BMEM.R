@@ -42,3 +42,7 @@ mediation <- "
 power.result <- power.boot(model = demo, indirect = mediation, nobs =65, nrep = 10, nboot = 10, alpha = 0.95, parallel = "multicore") #nrep?
 
 summary(power.result)
+
+#Biased-corrected confidence intervals
+bmem.ci.bc()
+
