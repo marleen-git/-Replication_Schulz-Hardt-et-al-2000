@@ -55,16 +55,17 @@ mediation <- "
 # Power analyses via bootstrap
 power.result <- bmem::power.boot(model = demo, 
                                  indirect = mediation, 
-                                 nobs = 95, 
+                                 nobs = 90, 
                                  nrep = 10, # nrep?
                                  nboot = 10, 
                                  alpha = 0.95, 
+                                 ci = "bc",
                                  parallel = "multicore") 
 
 summary(power.result)
 
 
 # Biased-corrected confidence intervals
-bmem::bmem.ci.bc(par.boot = boot.object, 
+bmem::bmem.ci.bc(par.boot = power.result, 
                  par0 = 43, 
                  cl = 0.95)
