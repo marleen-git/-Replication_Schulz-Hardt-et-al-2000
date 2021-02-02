@@ -63,6 +63,7 @@ power.result <- bmem::power.boot(model = demo,
 
 summary(power.result)
 
+
 # Biased-corrected confidence intervals
 bmem::bmem.ci.bc(par.boot = boot.object, 
                  par0 = 43, 
