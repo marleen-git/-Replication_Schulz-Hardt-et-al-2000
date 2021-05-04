@@ -12,6 +12,7 @@
 #Install packages
 if(!require(lavaan)){install.packages("lavaan", dependencies= TRUE)}
 if(!require(bmem)){install.packages("bmem")}
+if(!require(snowfall)){install.packages("snowfall")}
 
 # Activate packages
 library(lavaan)
@@ -44,73 +45,34 @@ mediation <- "
          "
 
 # Power analyses via bootstrap
-power.result <- bmem::power.boot(model = demo, 
+set.seed(1234); power.result <- bmem::power.boot(model = demo, 
                                  indirect = mediation, 
                                  nobs = 90, 
-                                 nrep = 10, 
-                                 nboot = 10, 
+                                 nrep = 1000,  #Zweiter Durchlauf mit 5.000
+                                 nboot = 1000, 
                                  alpha = 0.95, 
                                  ci = "bc",
-                                 parallel = "multicore") 
+                                 parallel = "no",
+                                 ncore = 10) 
+
 
 summary(power.result)
 
+#############################################################
+## Power Analysis with package "pwr2ppl" from Aberson 2019 ##
+#############################################################
 
-#Power curve
-nobs <- seq(10, 90, by=5)
+install.packages("pwr2ppl")
+library(pwr2ppl)
+
+pwr2ppl::med(rxm1=.56, rxm2=.43, rxm3=.3, rxm4=.3, 
+             rxy=.55,
+             rym1=.55, rym2=.51, rym3=.3, rym4=.3,
+             rm1m2=.23, rm1m3=.3, rm1m4=.3, rm2m3=.3, rm2m4=.3,rm3m4=.3,
+             alpha= 0.05,
+             mvars= 4, 
+             n= 46)
 
 
-result.powercurve <- power.curve(model = demo,
-                            indirect = mediation,
-                            nobs = nobs, 
-                            type = "boot",
-                            nrep = 10,
-                            nboot = 10,
-                            alpha = .95,
-                            parallel = "multicore")
 
-
-# Biased-corrected confidence intervals
-bmem <- bmem.ci.bc(par.boot = result.powercurve, 
-                 par0 = 90, 
-                 cl = 0.95)
-
-#######################
-#Predict system times #
-#######################
-
-N <- 90 
-
-system.time(bootstrap<-bmem::power.boot(demo, indirect = mediation, N, nrep = 10, nboot = 10, parallel = 'multicore'))
-system.time(bootstrap<-bmem::power.boot(demo, indirect = mediation, N, nrep = 30, nboot = 30, parallel = 'multicore'))
-system.time(bootstrap<-bmem::power.boot(demo, indirect = mediation, N, nrep = 60, nboot = 60, parallel = 'multicore'))
-system.time(bootstrap<-bmem::power.boot(demo, indirect = mediation, N, nrep = 100, nboot = 100, parallel = 'multicore'))
-
-library(tidyverse)
-install.packages("tibble")
-library(tibble)
-library(ggplot2)
-
-# Load the times from above into a dataframe
-benchmark <- tibble(bootstraps = c(10, 30, 60, 100),
-                    times = c(8.133, 43.086, 178.412, 544.586)) 
-
-# Plot the points and fit a curve
-ggplot(benchmark, aes(x = bootstraps, y = times)) +
-   geom_point() +
-   geom_smooth(se = FALSE, span = 5)
-
-# Fit a model
-fit <- lm(data = benchmark, times~poly(bootstraps,
-                                       2, raw=TRUE))
-newtimes <- data.frame(bootstraps = seq(100, 1000, length = 4))
-
-# Predict the time it will take for larger bootstrap/rep values
-predict(fit, newdata = newtimes)
->        1          2          3          4 
->  544.0899  9697.4746 30191.6173 62026.5178 
-
-# Convert from seconds to hours
-print(6290525.94 /60/60)
->[1] 17.22959
 
